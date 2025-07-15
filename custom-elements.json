@@ -1,0 +1,357 @@
+{
+  "schemaVersion": "1.0.0",
+  "readme": "",
+  "modules": [
+    {
+      "kind": "javascript-module",
+      "path": "foundation.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "newEditWizardEvent",
+          "return": {
+            "type": {
+              "text": "EditWizardEvent"
+            }
+          },
+          "parameters": [
+            {
+              "name": "element",
+              "type": {
+                "text": "Element"
+              }
+            },
+            {
+              "name": "eventInitDict",
+              "optional": true,
+              "type": {
+                "text": "CustomEventInit<Partial<EditWizardRequest>>"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "newCreateWizardEvent",
+          "return": {
+            "type": {
+              "text": "CreateWizardEvent"
+            }
+          },
+          "parameters": [
+            {
+              "name": "parent",
+              "type": {
+                "text": "Element"
+              }
+            },
+            {
+              "name": "tagName",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "eventInitDict",
+              "optional": true,
+              "type": {
+                "text": "CustomEventInit<Partial<CreateWizardRequest>>"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "newCloseWizardEvent",
+          "return": {
+            "type": {
+              "text": "CloseWizardEvent"
+            }
+          },
+          "parameters": [
+            {
+              "name": "wizard",
+              "type": {
+                "text": "WizardRequest"
+              }
+            },
+            {
+              "name": "eventInitDict",
+              "optional": true,
+              "type": {
+                "text": "CustomEventInit<Partial<WizardRequest>>"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "newEditWizardEvent",
+          "declaration": {
+            "name": "newEditWizardEvent",
+            "module": "foundation.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "newCreateWizardEvent",
+          "declaration": {
+            "name": "newCreateWizardEvent",
+            "module": "foundation.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "newCloseWizardEvent",
+          "declaration": {
+            "name": "newCloseWizardEvent",
+            "module": "foundation.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "oscd-background-wizard-events.spec.ts",
+      "declarations": [],
+      "exports": [
+        {
+          "kind": "custom-element-definition",
+          "name": "oscd-background-wizard-events",
+          "declaration": {
+            "name": "OscdMenuOpen",
+            "module": "/oscd-background-wizard-events.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "oscd-background-wizard-events.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "OscdBackgroundEditDialogEvents",
+          "members": [
+            {
+              "kind": "field",
+              "name": "editor",
+              "type": {
+                "text": "XMLEditor"
+              },
+              "attribute": "editor"
+            },
+            {
+              "kind": "field",
+              "name": "editDialog",
+              "type": {
+                "text": "OscdEditDialog"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "handleCreateWizardEvent",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "CreateWizardEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "handleEditWizardEvent",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "EditWizardEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "handleCloseWizardEvent"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "editor",
+              "type": {
+                "text": "XMLEditor"
+              },
+              "fieldName": "editor"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "default",
+          "declaration": {
+            "name": "OscdBackgroundEditDialogEvents",
+            "module": "oscd-background-wizard-events.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "demo/demo-editor-plugin.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "TriggerWizard",
+          "members": [
+            {
+              "kind": "field",
+              "name": "doc",
+              "type": {
+                "text": "XMLDocument"
+              },
+              "attribute": "doc"
+            },
+            {
+              "kind": "field",
+              "name": "editor",
+              "type": {
+                "text": "XMLEditor"
+              },
+              "attribute": "editor"
+            },
+            {
+              "kind": "field",
+              "name": "editCount",
+              "type": {
+                "text": "unknown"
+              },
+              "attribute": "editCount"
+            },
+            {
+              "kind": "field",
+              "name": "newTagName",
+              "type": {
+                "text": "HTMLSelectElement"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "parentSelector",
+              "type": {
+                "text": "HTMLInputElement"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "childinput",
+              "type": {
+                "text": "HTMLInputElement"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "tagSelector",
+              "type": {
+                "text": "HTMLInputElement"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "editDialog",
+              "type": {
+                "text": "WizardDialog"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "triggerWizardCreate",
+              "return": {
+                "type": {
+                  "text": "Promise<void>"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "triggerWizardEdit",
+              "return": {
+                "type": {
+                  "text": "Promise<void>"
+                }
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "doc",
+              "type": {
+                "text": "XMLDocument"
+              },
+              "fieldName": "doc"
+            },
+            {
+              "name": "editor",
+              "type": {
+                "text": "XMLEditor"
+              },
+              "fieldName": "editor"
+            },
+            {
+              "name": "editCount",
+              "type": {
+                "text": "unknown"
+              },
+              "fieldName": "editCount"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "default",
+          "declaration": {
+            "name": "TriggerWizard",
+            "module": "demo/demo-editor-plugin.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "coverage/lcov-report/block-navigation.js",
+      "declarations": [],
+      "exports": []
+    },
+    {
+      "kind": "javascript-module",
+      "path": "coverage/lcov-report/prettify.js",
+      "declarations": [],
+      "exports": []
+    },
+    {
+      "kind": "javascript-module",
+      "path": "coverage/lcov-report/sorter.js",
+      "declarations": [],
+      "exports": []
+    }
+  ]
+}

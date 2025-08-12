@@ -1,13 +1,8 @@
-import { __decorate } from '../node_modules/tslib/tslib.es6.js';
-import '../node_modules/@lit/reactive-element/reactive-element.js';
-import { html as x } from '../node_modules/lit-html/lit-html.js';
-import { LitElement as i$1 } from '../node_modules/lit-element/lit-element.js';
-import { property as n } from '../node_modules/@lit/reactive-element/decorators/property.js';
-import { query as e } from '../node_modules/@lit/reactive-element/decorators/query.js';
-import { wizards, emptyWizard } from '../node_modules/@omicronenergy/oscd-edit-dialog/dist/wizards/wizards.js';
+import { __decorate } from "tslib";
+import { css, html, LitElement } from 'lit';
+import { property, query } from 'lit/decorators.js';
+import { emptyWizard, wizards, } from '@omicronenergy/oscd-edit-dialog/wizards.js';
 import { newCreateWizardEvent, newEditWizardEvent } from '../foundation.js';
-import { css as i } from '../node_modules/@lit/reactive-element/css-tag.js';
-
 function prettyPrintXml(xml) {
     const serializer = new XMLSerializer();
     const xmlStr = serializer.serializeToString(xml);
@@ -35,7 +30,7 @@ const supportedCreateTagNames = Object.entries(wizards)
 const supportedEditTagNames = Object.entries(wizards)
     .filter(([, value]) => value.edit !== emptyWizard)
     .map(([key]) => key);
-class TriggerWizard extends i$1 {
+class TriggerWizard extends LitElement {
     async triggerWizardCreate() {
         const parent = this.doc.querySelector(this.parentSelector.value);
         const tagName = this.newTagName.value;
@@ -65,7 +60,7 @@ class TriggerWizard extends i$1 {
         this.requestUpdate();
     }
     render() {
-        return x `<div class="card">
+        return html `<div class="card">
         <h2>Add Element</h2>
         <p>
           Use this section to trigger the oscd-edit-dialog to Add/Inert the
@@ -75,7 +70,7 @@ class TriggerWizard extends i$1 {
         ><input id="parentSelector" value="Substation" />
         <label for="newTagName">Tag Name:</label
         ><select id="newTagName">
-          ${supportedCreateTagNames.map(tagName => x `<option value=${tagName}>${tagName}</option>`)}
+          ${supportedCreateTagNames.map(tagName => html `<option value=${tagName}>${tagName}</option>`)}
         </select>
         <button @click="${this.triggerWizardCreate}">Add</button>
       </div>
@@ -100,7 +95,7 @@ class TriggerWizard extends i$1 {
           >
             <h3>Supported Elements for Editing</h3>
             <ul>
-              ${supportedEditTagNames.map(tagName => x `<li>${tagName}</li>`)}
+              ${supportedEditTagNames.map(tagName => html `<li>${tagName}</li>`)}
             </ul>
           </div>
         </div>
@@ -113,7 +108,7 @@ class TriggerWizard extends i$1 {
       </div> `;
     }
 }
-TriggerWizard.styles = i `
+TriggerWizard.styles = css `
     .card {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -165,30 +160,29 @@ TriggerWizard.styles = i `
       visibility: visible;
     }
   `;
+export default TriggerWizard;
 __decorate([
-    n()
+    property()
 ], TriggerWizard.prototype, "doc", void 0);
 __decorate([
-    n()
+    property()
 ], TriggerWizard.prototype, "editor", void 0);
 __decorate([
-    n()
+    property()
 ], TriggerWizard.prototype, "editCount", void 0);
 __decorate([
-    e('#newTagName')
+    query('#newTagName')
 ], TriggerWizard.prototype, "newTagName", void 0);
 __decorate([
-    e('#parentSelector')
+    query('#parentSelector')
 ], TriggerWizard.prototype, "parentSelector", void 0);
 __decorate([
-    e('#childtag')
+    query('#childtag')
 ], TriggerWizard.prototype, "childinput", void 0);
 __decorate([
-    e('#tagSelector')
+    query('#tagSelector')
 ], TriggerWizard.prototype, "tagSelector", void 0);
 __decorate([
-    e('oscd-edit-dialog')
+    query('oscd-edit-dialog')
 ], TriggerWizard.prototype, "editDialog", void 0);
-
-export { TriggerWizard as default };
 //# sourceMappingURL=demo-editor-plugin.js.map

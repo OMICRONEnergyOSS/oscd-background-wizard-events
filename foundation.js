@@ -1,4 +1,4 @@
-function newEditWizardEvent(element, eventInitDict) {
+export function newEditWizardEvent(element, eventInitDict) {
     return new CustomEvent('oscd-edit-wizard-request', {
         bubbles: true,
         composed: true,
@@ -6,7 +6,7 @@ function newEditWizardEvent(element, eventInitDict) {
         detail: { element },
     });
 }
-function newCreateWizardEvent(parent, tagName, eventInitDict) {
+export function newCreateWizardEvent(parent, tagName, eventInitDict) {
     return new CustomEvent('oscd-create-wizard-request', {
         bubbles: true,
         composed: true,
@@ -17,6 +17,12 @@ function newCreateWizardEvent(parent, tagName, eventInitDict) {
         },
     });
 }
-
-export { newCreateWizardEvent, newEditWizardEvent };
+export function newCloseWizardEvent(wizard, eventInitDict) {
+    return new CustomEvent('oscd-close-wizard', {
+        bubbles: true,
+        composed: true,
+        ...eventInitDict,
+        detail: wizard,
+    });
+}
 //# sourceMappingURL=foundation.js.map

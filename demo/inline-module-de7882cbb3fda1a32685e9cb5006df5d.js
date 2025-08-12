@@ -51430,7 +51430,7 @@ const plugins = {
       translations: { de: 'Wizard Triggern' },
       icon: 'folder_open',
       requireDoc: true,
-      src: '/demo/demo-editor-plugin.js',
+      src: './demo-editor-plugin.js',
     },
   ],
   background: [

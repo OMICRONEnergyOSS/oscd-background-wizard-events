@@ -7,7 +7,7 @@ import OscdEditDialog from '@omicronenergy/oscd-edit-dialog/OscdEditDialog.js';
 import { Edit } from '@omicronenergy/oscd-api';
 import { convertEdit } from '@omicronenergy/oscd-api/utils.js';
 
-export default class OscdBackgroundEditDialogEvents extends LitElement {
+export default class OscdBackgroundWizardEvents extends LitElement {
   @property({ type: Object })
   editor!: XMLEditor;
 

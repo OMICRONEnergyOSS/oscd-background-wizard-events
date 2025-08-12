@@ -6,10 +6,13 @@ This webcomponent follows the [open-wc](https://github.com/open-wc/open-wc) reco
 
 ## What is this?
 
-This is an OpenSCD backgroun plugin for [OpenSCD](https://openscd.org) which provides backwards compatability for other plugins which are reliant on the wizard events:
-* oscd-create-wizard-request
-* oscd-edit-wizard-request
-* oscd-close-wizard
+The oscd-shell has been updated with the recent api changes, which removes built in support for the Wizard.
+This means the oscd-shell (formerly known as open-scd-core) no longer listens for wizard events.
+This OpenSCD background plugin, provides backwards compatability for other plugins which are reliant on the wizard events:
+
+- oscd-create-wizard-request
+- oscd-edit-wizard-request
+- oscd-close-wizard
 
 If your distro uses plugins which fire these events, you need to include this background plugin to intercept these events and open up the appropriate wizard dialog.
 

@@ -78,7 +78,6 @@ export default [
           ],
         },
       ],
-      curly: ['error', 'all'],
       'import-x/no-unresolved': 'off',
       'import-x/extensions': [
         'error',
@@ -90,4 +89,9 @@ export default [
     },
   },
   eslintPluginPrettierRecommended,
+  {
+    rules: {
+      curly: ['error', 'all'],
+    },
+  },
 ];

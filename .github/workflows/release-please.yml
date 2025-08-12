@@ -47,32 +47,32 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-  gh-pages:
+  upload-release-bundle:
     needs: release-please
     if: ${{ needs.release-please.outputs.release_created }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pages: write
       id-token: write
 
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup Node Environment
         run: npm ci
 
+      - name: Set repository name env var
+        run: echo "REPO_NAME=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
+
       - name: Build plugin bundle
         run: npm run bundle
 
-      - name: Upload bundle
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./dist
+      - name: Create zipped bundle
+        run: |
+          (cd ./dist && zip -r ../${REPO_NAME}.zip .)
+          tar -C ./dist -czvf ${REPO_NAME}.tar.gz ./
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Upload zipped bundle to GitHub release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload ${{ needs.release-please.outputs.tag_name }} ${REPO_NAME}.zip ${REPO_NAME}.tar.gz

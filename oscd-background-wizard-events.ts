@@ -1,18 +1,24 @@
 import { XMLEditor } from '@omicronenergy/oscd-editor';
+import { ScopedElementsMixin } from '@open-wc/scoped-elements/lit-element.js';
 import { CreateWizardEvent, EditWizardEvent } from './foundation.js';
 import { html, LitElement } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import '@omicronenergy/oscd-edit-dialog/oscd-edit-dialog.js';
-import OscdEditDialog from '@omicronenergy/oscd-edit-dialog/OscdEditDialog.js';
+import OscdSclDialogs from '@omicronenergy/oscd-scl-dialogs/OscdSclDialogs.js';
 import { Edit } from '@omicronenergy/oscd-api';
 import { convertEdit } from '@omicronenergy/oscd-api/utils.js';
 
-export default class OscdBackgroundWizardEvents extends LitElement {
+class BaseElement extends ScopedElementsMixin(LitElement) {}
+
+export default class OscdBackgroundWizardEvents extends BaseElement {
+  static scopedElements = {
+    'oscd-scl-dialogs': OscdSclDialogs,
+  };
+
   @property({ type: Object })
   editor!: XMLEditor;
 
-  @query('oscd-edit-dialog')
-  editDialog!: OscdEditDialog;
+  @query('oscd-scl-dialogs')
+  editDialog!: OscdSclDialogs;
 
   async handleCreateWizardEvent(event: CreateWizardEvent) {
     const wizardType = event.detail;
@@ -52,6 +58,6 @@ export default class OscdBackgroundWizardEvents extends LitElement {
 
   // eslint-disable-next-line class-methods-use-this
   render() {
-    return html`<oscd-edit-dialog></oscd-edit-dialog>`;
+    return html`<oscd-scl-dialogs></oscd-scl-dialogs>`;
   }
 }

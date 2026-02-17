@@ -10,22 +10,23 @@
 <oscd-shell></oscd-shell>
 
 <script type="module">
+  import '@webcomponents/scoped-custom-element-registry';
   import '@omicronenergy/oscd-shell/oscd-shell.js';
   import { plugins } from './plugins.js';
 
-  const editor = document.querySelector('oscd-shell');
-  editor.plugins = plugins;
+  const oscdShell = document.querySelector('oscd-shell');
+  oscdShell.plugins = plugins;
 
   const params = new URL(document.location).searchParams;
   for (const [name, value] of params) {
-    editor.setAttribute(name, value);
+    oscdShell.setAttribute(name, value);
   }
 
   const sample = await fetch('sample.scd').then(r => r.text());
-  editor.docs = {
+  oscdShell.docs = {
     ['sample.scd']: new DOMParser().parseFromString(sample, 'application/xml'),
   };
-  editor.docName = 'sample.scd';
+  oscdShell.docName = 'sample.scd';
 </script>
 
 <style>

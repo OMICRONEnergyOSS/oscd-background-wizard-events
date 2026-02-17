@@ -2,7 +2,6 @@
 import { expect, fixture, html, waitUntil } from '@open-wc/testing';
 // Note: it would be nice if the tests could be run with scoped custom elements,
 // but for now, we'll use the global registry.
-import '@webcomponents/scoped-custom-element-registry';
 
 import { SinonSpy, spy } from 'sinon';
 
@@ -44,15 +43,15 @@ describe('oscd-background-wizard-events', () => {
 
   afterEach(() => pluginFixture.remove());
 
-  it('opens the create oscd-edit-dialog upon receiving a oscd-create-wizard-request event', async () => {
+  it('opens the create oscd-scl-dialogs upon receiving a oscd-create-wizard-request event', async () => {
     const parent = doc.querySelector('Substation')!;
     const tagName = 'Bay';
     pluginFixture.dispatchEvent(newCreateWizardEvent(parent, tagName));
     await pluginFixture.updateComplete;
 
-    const oscdEditDialog =
-      pluginFixture?.shadowRoot?.querySelector('oscd-edit-dialog');
-    const mdDialog = oscdEditDialog?.shadowRoot?.querySelector(
+    const OscdSclDialogs =
+      pluginFixture?.shadowRoot?.querySelector('oscd-scl-dialogs');
+    const mdDialog = OscdSclDialogs?.shadowRoot?.querySelector(
       'md-dialog',
     ) as LitElement & { open: boolean };
     await mdDialog.updateComplete;
@@ -64,28 +63,28 @@ describe('oscd-background-wizard-events', () => {
     ) as (LitElement & HTMLInputElement) | null;
     expect(nameField).to.exist;
     nameField!.value = 'TestBay';
-    nameField!.dispatchEvent(new Event('change'));
+    nameField!.dispatchEvent(new Event(''));
 
     await nameField!.updateComplete;
 
-    const createButton = mdDialog?.querySelector(
-      "div[slot='actions'] md-text-button:last-of-type",
+    const dialogSubmitButton = mdDialog?.querySelector(
+      "md-filled-button[form='add-data-object']",
     ) as HTMLButtonElement | null;
-    createButton?.click();
+    dialogSubmitButton?.click();
     await waitUntil(() => !mdDialog.open, 'Dialog timed out waiting to close');
     await pluginFixture.updateComplete;
 
     expect(xmlEditorCommit.calledOnce).to.equal(true);
   });
 
-  it('opens the edit oscd-edit-dialog upon receiving an oscd-edit-wizard-request event', async () => {
+  it('opens the edit oscd-scl-dialogs upon receiving an oscd-edit-wizard-request event', async () => {
     const element = doc.querySelector('Substation')!;
     pluginFixture.dispatchEvent(newEditWizardEvent(element));
     await pluginFixture.updateComplete;
 
-    const oscdEditDialog =
-      pluginFixture?.shadowRoot?.querySelector('oscd-edit-dialog');
-    const mdDialog = oscdEditDialog?.shadowRoot?.querySelector(
+    const OscdSclDialogs =
+      pluginFixture?.shadowRoot?.querySelector('oscd-scl-dialogs');
+    const mdDialog = OscdSclDialogs?.shadowRoot?.querySelector(
       'md-dialog',
     ) as LitElement & { open: boolean };
     await mdDialog.updateComplete;
@@ -101,24 +100,24 @@ describe('oscd-background-wizard-events', () => {
 
     await nameField!.updateComplete;
 
-    const createButton = mdDialog?.querySelector(
-      "div[slot='actions'] md-text-button:last-of-type",
+    const dialogSubmitButton = mdDialog?.querySelector(
+      "md-filled-button[form='add-data-object']",
     ) as HTMLButtonElement | null;
-    createButton?.click();
+    dialogSubmitButton?.click();
     await waitUntil(() => !mdDialog.open, 'Dialog timed out waiting to close');
     await pluginFixture.updateComplete;
 
     expect(xmlEditorCommit.calledOnce).to.equal(true);
   });
 
-  it('closes oscd-edit-dialog upon receiving an oscd-close-wizard event', async () => {
+  it('closes oscd-scl-dialogs upon receiving an oscd-close-wizard event', async () => {
     const element = doc.querySelector('Substation')!;
     pluginFixture.dispatchEvent(newEditWizardEvent(element));
     await pluginFixture.updateComplete;
 
-    const oscdEditDialog =
-      pluginFixture?.shadowRoot?.querySelector('oscd-edit-dialog');
-    const mdDialog = oscdEditDialog?.shadowRoot?.querySelector(
+    const OscdSclDialogs =
+      pluginFixture?.shadowRoot?.querySelector('oscd-scl-dialogs');
+    const mdDialog = OscdSclDialogs?.shadowRoot?.querySelector(
       'md-dialog',
     ) as LitElement & { open: boolean };
     await mdDialog.updateComplete;

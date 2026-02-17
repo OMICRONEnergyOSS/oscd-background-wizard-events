@@ -123,6 +123,15 @@
           "members": [
             {
               "kind": "field",
+              "name": "scopedElements",
+              "type": {
+                "text": "object"
+              },
+              "static": true,
+              "default": "{ 'oscd-scl-dialogs': OscdSclDialogs, }"
+            },
+            {
+              "kind": "field",
               "name": "editor",
               "type": {
                 "text": "XMLEditor"
@@ -133,7 +142,7 @@
               "kind": "field",
               "name": "editDialog",
               "type": {
-                "text": "OscdEditDialog"
+                "text": "OscdSclDialogs"
               }
             },
             {
@@ -175,10 +184,9 @@
             }
           ],
           "superclass": {
-            "name": "LitElement",
-            "package": "lit"
-          },
-          "customElement": true
+            "name": "BaseElement",
+            "module": "oscd-background-wizard-events.ts"
+          }
         }
       ],
       "exports": [

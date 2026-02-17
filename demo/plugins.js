@@ -3,14 +3,18 @@ import OscdMenuSave from '@omicronenergy/oscd-menu-save';
 import OscdBackgroundEditV1 from '@omicronenergy/oscd-background-editv1';
 import OscdBackgroundWizardEvents from '../oscd-background-wizard-events.js';
 
-customElements.define('oscd-menu-open', OscdMenuOpen);
-customElements.define('oscd-menu-save', OscdMenuSave);
-customElements.define('oscd-background-editv1', OscdBackgroundEditV1);
+const oscdShell = document.querySelector('oscd-shell');
 
-customElements.define(
-  'oscd-background-wizard-events',
-  OscdBackgroundWizardEvents,
-);
+if (oscdShell?.registry) {
+  const { registry } = oscdShell;
+  registry.define('oscd-menu-open', OscdMenuOpen);
+  registry.define('oscd-menu-save', OscdMenuSave);
+  registry.define('oscd-background-editv1', OscdBackgroundEditV1);
+
+  registry.define('oscd-background-wizard-events', OscdBackgroundWizardEvents);
+} else {
+  console.error('Shell registry not found. Plugins could not be registered.');
+}
 
 export const plugins = {
   menu: [

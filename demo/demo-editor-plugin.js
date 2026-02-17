@@ -74,7 +74,7 @@ const e$1=(e,t,c)=>(c.configurable=true,c.enumerable=true,Reflect.decorate&&"obj
 
 function updateSourceRef$2(element, { oldSubstation, oldVoltageLevel, oldBay, newBay, }) {
     const sourceRefs = Array.from(element.ownerDocument.querySelectorAll('Private[type="eIEC61850-6-100"]>LNodeInputs>SourceRef'));
-    const updates = [];
+    const setAttributes = [];
     sourceRefs.forEach((srcRef) => {
         const source = srcRef.getAttribute("source");
         if (!source)
@@ -83,12 +83,12 @@ function updateSourceRef$2(element, { oldSubstation, oldVoltageLevel, oldBay, ne
         if (!source.startsWith(oldPath))
             return;
         const newPath = `${oldSubstation}/${oldVoltageLevel}/${newBay}`;
-        updates.push({
+        setAttributes.push({
             element: srcRef,
             attributes: { source: source.replace(oldPath, newPath) },
         });
     });
-    return updates.filter((update) => update);
+    return setAttributes.filter((update) => update);
 }
 function updateConnectivityNodes$2(element, { substation, voltageLevel, bayName, }) {
     const cNodes = Array.from(element.getElementsByTagName("ConnectivityNode"));
@@ -116,32 +116,32 @@ function updateConnectivityNodes$2(element, { substation, voltageLevel, bayName,
 function updateTerminals$2(element, { oldConnectivityNode, connectivityNode, bayName, }) {
     const terminals = Array.from(element.closest("Substation").querySelectorAll(`Terminal[connectivityNode="${oldConnectivityNode}"],
        NeutralPoint[connectivityNode="${oldConnectivityNode}"]`));
-    const updates = terminals.map((terminal) => ({
+    const setAttributes = terminals.map((terminal) => ({
         element: terminal,
         attributes: {
             connectivityNode,
             bayName,
         },
     }));
-    return updates;
+    return setAttributes;
 }
 /** Updates `Bay` attributes and cross-referenced elements
- * @param update - update edit on `Bay` attributes
+ * @param setAttributes - setAttributes edit on `Bay` attributes
  * @returns Completed update edit array */
-function updateBay(update) {
-    if (update.element.tagName !== "Bay")
-        return [update];
-    const bay = update.element;
-    const attributes = update.attributes;
-    if (!attributes.name)
-        return [update];
+function updateBay(setAttributes) {
+    if (setAttributes.element.tagName !== "Bay")
+        return [setAttributes];
+    const bay = setAttributes.element;
+    const attributes = setAttributes.attributes;
+    if (!attributes || !attributes.name)
+        return [setAttributes];
     const oldName = bay.getAttribute("name");
     const substationName = bay.closest("Substation")?.getAttribute("name");
     const voltageLevelName = bay.closest("VoltageLevel")?.getAttribute("name");
     const newName = attributes.name;
     if (!substationName || !voltageLevelName || !oldName || oldName === newName)
-        return [update];
-    return [update].concat(...updateConnectivityNodes$2(bay, {
+        return [setAttributes];
+    return [setAttributes].concat(...updateConnectivityNodes$2(bay, {
         substation: substationName,
         voltageLevel: voltageLevelName,
         bayName: newName,
@@ -210,23 +210,23 @@ function updateTerminals$1(element, { oldConnectivityNode, connectivityNode, vol
     return updates;
 }
 /** Updates `VoltageLevel` attributes and cross-referenced elements
- * @param update - update edit on `VoltageLevel` attributes
+ * @param setAttributes - update edit on `VoltageLevel` attributes
  * @returns Completed update edit array */
-function updateVoltageLevel(update) {
-    if (update.element.tagName !== "VoltageLevel")
-        return [update];
-    const voltageLevel = update.element;
-    const attributes = update.attributes;
-    if (!attributes.name)
-        return [update];
+function updateVoltageLevel(setAttributes) {
+    if (setAttributes.element.tagName !== "VoltageLevel")
+        return [setAttributes];
+    const voltageLevel = setAttributes.element;
+    const attributes = setAttributes.attributes;
+    if (!attributes?.name)
+        return [setAttributes];
     const oldName = voltageLevel.getAttribute("name");
     const substationName = voltageLevel
         .closest("Substation")
         ?.getAttribute("name");
     const newName = attributes.name;
     if (!substationName || !oldName || oldName === newName)
-        return [update];
-    return [update].concat(...updateConnectivityNodes$1(voltageLevel, {
+        return [setAttributes];
+    return [setAttributes].concat(...updateConnectivityNodes$1(voltageLevel, {
         substation: substationName,
         voltageLevelName: newName,
     }), ...updateSourceRef$1(voltageLevel, {
@@ -299,7 +299,7 @@ function updateSubstation(update) {
         return [update];
     const substation = update.element;
     const attributes = update.attributes;
-    if (!attributes.name)
+    if (!attributes?.name)
         return [update];
     const oldName = substation.getAttribute("name");
     const newName = attributes.name;
@@ -1331,23 +1331,23 @@ function updateObjectReferences(ied, oldIedName, newIedName, checkPermission = f
  * 2. Update all control block object references pointing to the IED
  * 3. Updates IEDName elements text content
  * ```
- * @param update - IED element and attributes to be changed in the IED element
+ * @param setAttributes - IED element and attributes to be changed in the IED element
  * @param checkPermission - Check permission before changing object references
  * (other than supervision node GoCBRef values).
  * @returns - Set of addition edits updating all references SCL elements
  */
-function updateIED(update, checkPermission = false) {
-    if (update.element.tagName !== "IED")
+function updateIED(setAttributes, checkPermission = false) {
+    if (setAttributes.element.tagName !== "IED")
         return [];
-    if (!update.attributes.name)
-        return [update];
-    const ied = update.element;
+    if (!setAttributes.attributes?.name)
+        return [setAttributes];
+    const ied = setAttributes.element;
     const oldIedName = ied.getAttribute("name");
-    const newIedName = update.attributes.name;
+    const newIedName = setAttributes.attributes.name;
     if (!oldIedName)
         return [];
     return [
-        update,
+        setAttributes,
         ...updateIedNameAttributes(ied, oldIedName, newIedName),
         ...updateSubscriptionSupervision(ied, oldIedName, newIedName),
         ...updateIEDNameTextContent(ied, oldIedName, newIedName),
@@ -1379,7 +1379,7 @@ const lnInstRange = Array(maxLnInst)
  */
 function lnInstGenerator(parent, tagName) {
     const generators = new Map();
-    const generatedAttribute = "lnInst";
+    const generatedAttribute = tagName === "LN" ? "inst" : "lnInst";
     return (lnClass) => {
         if (!generators.has(lnClass)) {
             const lnInstOrInst = new Set(getChildElementsByTagName$1(parent, tagName)
@@ -24709,7 +24709,7 @@ function renderBayWizard(options) {
     ></scl-text-field>`,
     ];
 }
-function createAction$g(parent) {
+function createAction$i(parent) {
     return (inputs) => {
         const name = getValue(inputs.find(i => i.label === 'name'));
         const desc = getValue(inputs.find(i => i.label === 'desc'));
@@ -24731,7 +24731,7 @@ function createBayWizard(parent) {
         primary: {
             icon: '',
             label: 'add',
-            action: createAction$g(parent),
+            action: createAction$i(parent),
         },
         content: renderBayWizard({
             name: '',
@@ -24740,7 +24740,7 @@ function createBayWizard(parent) {
         }),
     };
 }
-function updateAction$l(element) {
+function updateAction$n(element) {
     return (inputs) => {
         const name = inputs.find(i => i.label === 'name').value;
         const desc = getValue(inputs.find(i => i.label === 'desc'));
@@ -24757,7 +24757,7 @@ function editBayWizard(element) {
         primary: {
             icon: 'edit',
             label: 'save',
-            action: updateAction$l(element),
+            action: updateAction$n(element),
         },
         content: renderBayWizard({
             name: element.getAttribute('name'),
@@ -24902,7 +24902,7 @@ function renderConductingEquipmentWizard(options) {
     ></scl-text-field>`,
     ];
 }
-function createAction$f(parent) {
+function createAction$h(parent) {
     return (inputs) => {
         const name = getValue(inputs.find(i => i.label === 'name'));
         const desc = getValue(inputs.find(i => i.label === 'desc'));
@@ -24971,7 +24971,7 @@ function createConductingEquipmentWizard(parent) {
         primary: {
             icon: 'add',
             label: 'add',
-            action: createAction$f(parent),
+            action: createAction$h(parent),
         },
         content: renderConductingEquipmentWizard({
             name: '',
@@ -24982,7 +24982,7 @@ function createConductingEquipmentWizard(parent) {
         }),
     };
 }
-function updateAction$k(element) {
+function updateAction$m(element) {
     return (inputs) => {
         const name = getValue(inputs.find(i => i.label === 'name'));
         const desc = getValue(inputs.find(i => i.label === 'desc'));
@@ -24999,7 +24999,7 @@ function editConductingEquipmentWizard(element) {
         primary: {
             icon: 'edit',
             label: 'save',
-            action: updateAction$k(element),
+            action: updateAction$m(element),
         },
         content: renderConductingEquipmentWizard({
             name: element.getAttribute('name'),
@@ -25029,14 +25029,17 @@ const patterns = {
     unsigned: '[+]?[0-9]+(([.][0-9]*)?|([.][0-9]+))',
     alphanumericFirstUpperCase: '[A-Z][0-9,A-Z,a-z]*',
     alphanumericFirstLowerCase: '[a-z][0-9,A-Z,a-z]*',
+    prefix: '[A-Za-z][0-9A-Za-z_]*',
     lnClass: '(LLN0)|[A-Z]{4,4}',
+    lnInst: '[0-9]{1,12}',
     abstractDataAttributeName: '((T)|(Test)|(Check)|(SIUnit)|(Oper)|(SBO)|(SBOw)|(Cancel)|[a-z][0-9A-Za-z]*)',
     cdc: '(SPS)|(DPS)|(INS)|(ENS)|(ACT)|(ACD)|(SEC)|(BCR)|(HST)|(VSS)|(MV)|(CMV)|(SAV)|' +
         '(WYE)|(DEL)|(SEQ)|(HMV)|(HWYE)|(HDEL)|(SPC)|(DPC)|(INC)|(ENC)|(BSC)|(ISC)|(APC)|(BAC)|' +
         '(SPG)|(ING)|(ENG)|(ORG)|(TSG)|(CUG)|(VSG)|(ASG)|(CURVE)|(CSG)|(DPL)|(LPL)|(CSD)|(CST)|' +
         '(BTS)|(UTS)|(LTS)|(GTS)|(MTS)|(NTS)|(STS)|(CTS)|(OTS)|(VSD)'};
 const maxLength = {
-    abstracDaName: 60};
+    abstracDaName: 60,
+    prefix: 11};
 const predefinedBasicTypeEnum = [
     'BOOLEAN',
     'INT8',
@@ -25143,6 +25146,10 @@ function getPElement(parent, type) {
     return (Array.from(parent.querySelectorAll(':scope > Address > P')).find(p => p.getAttribute('type') === type) ?? null);
 }
 function existDiff(oldAddr, newAddr) {
+    if (oldAddr.querySelectorAll('P').length !==
+        newAddr.querySelectorAll('P').length) {
+        return true;
+    }
     return Array.from(oldAddr.querySelectorAll('P')).some(pType => getPElement(newAddr, pType.getAttribute('type'))?.textContent !==
         pType.textContent);
 }
@@ -25488,7 +25495,7 @@ function createConnectedApWizard(element) {
         ],
     };
 }
-function updateAction$j(element) {
+function updateAction$l(element) {
     return (inputs, wizard) => {
         const instType = wizard.querySelector('#instType').value === 'true';
         const addressContent = {};
@@ -25507,7 +25514,7 @@ function editConnectedApWizard(element) {
         primary: {
             icon: 'save',
             label: 'save',
-            action: updateAction$j(element),
+            action: updateAction$l(element),
         },
         content: [...contentAddress({ element, types: getTypes(element) })],
     };
@@ -26031,7 +26038,7 @@ function nextOrd(parent) {
     const maxOrd = Math.max(...Array.from(parent.children).map(child => parseInt(child.getAttribute('ord') ?? '-2', 10)));
     return isFinite(maxOrd) ? (maxOrd + 1).toString(10) : '0';
 }
-function createAction$e(parent) {
+function createAction$g(parent) {
     return (inputs) => {
         const value = getValue(inputs.find(i => i.label === 'value'));
         const desc = getValue(inputs.find(i => i.label === 'desc'));
@@ -26058,12 +26065,12 @@ function createEnumValWizard(parent) {
         primary: {
             icon: '',
             label: 'Save',
-            action: createAction$e(parent),
+            action: createAction$g(parent),
         },
         content: renderContent$3({ ord, desc, value }),
     };
 }
-function updateAction$i(element) {
+function updateAction$k(element) {
     return (inputs) => {
         const value = getValue(inputs.find(i => i.label === 'value')) ?? '';
         const desc = getValue(inputs.find(i => i.label === 'desc'));
@@ -26098,7 +26105,7 @@ function editEnumValWizard(element) {
         primary: {
             icon: '',
             label: 'Save',
-            action: updateAction$i(element),
+            action: updateAction$k(element),
         },
         content: renderContent$3({ ord, desc, value }),
     };
@@ -26194,7 +26201,7 @@ function editFunctionWizard(element) {
     };
 }
 
-function createAction$d(parent) {
+function createAction$f(parent) {
     return (inputs) => {
         const attributes = {};
         const eqFunctionKeys = ['name', 'desc', 'type'];
@@ -26220,7 +26227,7 @@ function createEqFunctionWizard(parent) {
         primary: {
             icon: 'save',
             label: 'save',
-            action: createAction$d(parent),
+            action: createAction$f(parent),
         },
         content: [
             ...contentFunctionWizard({
@@ -26232,7 +26239,7 @@ function createEqFunctionWizard(parent) {
         ],
     };
 }
-function updateAction$h(element) {
+function updateAction$j(element) {
     return (inputs) => {
         const attributes = {};
         const functionKeys = ['name', 'desc', 'type'];
@@ -26254,7 +26261,7 @@ function editEqFunctionWizard(element) {
         primary: {
             icon: 'save',
             label: 'save',
-            action: updateAction$h(element),
+            action: updateAction$j(element),
         },
         content: [
             ...contentFunctionWizard({
@@ -26305,7 +26312,7 @@ function createEqSubFunctionWizard(parent) {
         ],
     };
 }
-function updateAction$g(element) {
+function updateAction$i(element) {
     return (inputs) => {
         const attributes = {};
         const functionKeys = ['name', 'desc', 'type'];
@@ -26327,7 +26334,7 @@ function editEqSubFunctionWizard(element) {
         primary: {
             icon: 'save',
             label: 'save',
-            action: updateAction$g(element),
+            action: updateAction$i(element),
         },
         content: [
             ...contentFunctionWizard({
@@ -26368,7 +26375,7 @@ function contentGeneralEquipmentWizard(options) {
     ></scl-checkbox>`,
     ];
 }
-function createAction$c(parent) {
+function createAction$e(parent) {
     return (inputs) => {
         const attributes = {};
         const generalEquipmentKeys = ['name', 'desc', 'type', 'virtual'];
@@ -26395,7 +26402,7 @@ function createGeneralEquipmentWizard(parent) {
         primary: {
             icon: 'save',
             label: 'save',
-            action: createAction$c(parent),
+            action: createAction$e(parent),
         },
         content: [
             ...contentGeneralEquipmentWizard({
@@ -26408,7 +26415,7 @@ function createGeneralEquipmentWizard(parent) {
         ],
     };
 }
-function updateAction$f(element) {
+function updateAction$h(element) {
     return (inputs) => {
         const attributes = {};
         const generalEquipmentKeys = ['name', 'desc', 'type', 'virtual'];
@@ -26431,7 +26438,7 @@ function editGeneralEquipmentWizard(element) {
         primary: {
             icon: 'save',
             label: 'save',
-            action: updateAction$f(element),
+            action: updateAction$h(element),
         },
         content: [
             ...contentGeneralEquipmentWizard({
@@ -26481,7 +26488,7 @@ function renderContent$2(options) {
     ></scl-text-field>`,
     ];
 }
-function createAction$b(parent) {
+function createAction$d(parent) {
     return (inputs) => {
         const attributes = {};
         const lineKeys = ['name', 'desc', 'type', 'nomFreq', 'numPhases'];
@@ -26504,7 +26511,7 @@ function createLineWizard(parent) {
         primary: {
             icon: 'save',
             label: 'save',
-            action: createAction$b(parent),
+            action: createAction$d(parent),
         },
         content: [
             ...renderContent$2({
@@ -26517,7 +26524,7 @@ function createLineWizard(parent) {
         ],
     };
 }
-function updateAction$e(element) {
+function updateAction$g(element) {
     return (inputs) => {
         const attributes = {};
         const lineKeys = ['name', 'desc', 'type', 'nomFreq', 'numPhases'];
@@ -26536,7 +26543,7 @@ function editLineWizard(element) {
         primary: {
             icon: 'edit',
             label: 'save',
-            action: updateAction$e(element),
+            action: updateAction$g(element),
         },
         content: renderContent$2({
             name: element.getAttribute('name') ?? '',
@@ -26571,7 +26578,7 @@ function renderPowerTransformerWizard(options) {
     ></scl-text-field>`,
     ];
 }
-function createAction$a(parent) {
+function createAction$c(parent) {
     return (inputs) => {
         const name = getValue(inputs.find(i => i.label === 'name'));
         const desc = getValue(inputs.find(i => i.label === 'desc'));
@@ -26595,7 +26602,7 @@ function createPowerTransformerWizard(parent) {
         primary: {
             icon: '',
             label: 'add',
-            action: createAction$a(parent),
+            action: createAction$c(parent),
         },
         content: renderPowerTransformerWizard({
             name: '',
@@ -26605,7 +26612,7 @@ function createPowerTransformerWizard(parent) {
         }),
     };
 }
-function updateAction$d(element) {
+function updateAction$f(element) {
     return (inputs) => {
         const name = inputs.find(i => i.label === 'name').value;
         const desc = getValue(inputs.find(i => i.label === 'desc'));
@@ -26622,7 +26629,7 @@ function editPowerTransformerWizard(element) {
         primary: {
             icon: 'edit',
             label: 'save',
-            action: updateAction$d(element),
+            action: updateAction$f(element),
         },
         content: renderPowerTransformerWizard({
             name: element.getAttribute('name'),
@@ -26654,7 +26661,7 @@ function contentProcessWizard(content) {
     ></scl-text-field>`,
     ];
 }
-function createAction$9(parent) {
+function createAction$b(parent) {
     return (inputs) => {
         const attributes = {};
         const processKeys = ['name', 'desc', 'type'];
@@ -26679,7 +26686,7 @@ function createProcessWizard(parent) {
         primary: {
             icon: 'save',
             label: 'save',
-            action: createAction$9(parent),
+            action: createAction$b(parent),
         },
         content: [
             ...contentProcessWizard({
@@ -26691,7 +26698,7 @@ function createProcessWizard(parent) {
         ],
     };
 }
-function updateAction$c(element) {
+function updateAction$e(element) {
     return (inputs) => {
         const attributes = {};
         const tapProcessKeys = ['name', 'desc', 'type'];
@@ -26716,7 +26723,7 @@ function editProcessWizard(element) {
         primary: {
             icon: 'save',
             label: 'save',
-            action: updateAction$c(element),
+            action: updateAction$e(element),
         },
         content: [
             ...contentProcessWizard({
@@ -26847,7 +26854,7 @@ function contentSubEquipmentWizard(options) {
     ></scl-checkbox>`,
     ];
 }
-function createAction$8(parent) {
+function createAction$a(parent) {
     return (inputs) => {
         const subEquipmentAttrs = {};
         const subEquipmentKeys = ['name', 'desc', 'phase', 'virtual'];
@@ -26874,7 +26881,7 @@ function createSubEquipmentWizard(parent) {
         primary: {
             icon: 'save',
             label: 'save',
-            action: createAction$8(parent),
+            action: createAction$a(parent),
         },
         content: [
             ...contentSubEquipmentWizard({
@@ -26887,7 +26894,7 @@ function createSubEquipmentWizard(parent) {
         ],
     };
 }
-function updateAction$b(element) {
+function updateAction$d(element) {
     return (inputs) => {
         const attributes = {};
         const subFunctionKeys = ['name', 'desc', 'phase', 'virtual'];
@@ -26910,7 +26917,7 @@ function editSubEquipmentWizard(element) {
         primary: {
             icon: 'save',
             label: 'save',
-            action: updateAction$b(element),
+            action: updateAction$d(element),
         },
         content: [
             ...contentSubEquipmentWizard({
@@ -26924,7 +26931,7 @@ function editSubEquipmentWizard(element) {
     };
 }
 
-function createAction$7(parent) {
+function createAction$9(parent) {
     return (inputs) => {
         const attributes = {};
         const subFunctionKeys = ['name', 'desc', 'type'];
@@ -26950,7 +26957,7 @@ function createSubFunctionWizard(parent) {
         primary: {
             icon: 'save',
             label: 'save',
-            action: createAction$7(parent),
+            action: createAction$9(parent),
         },
         content: [
             ...contentFunctionWizard({
@@ -26962,7 +26969,7 @@ function createSubFunctionWizard(parent) {
         ],
     };
 }
-function updateAction$a(element) {
+function updateAction$c(element) {
     return (inputs) => {
         const attributes = {};
         const subFunctionKeys = ['name', 'desc', 'type'];
@@ -26984,7 +26991,7 @@ function editSubFunctionWizard(element) {
         primary: {
             icon: 'save',
             label: 'save',
-            action: updateAction$a(element),
+            action: updateAction$c(element),
         },
         content: [
             ...contentFunctionWizard({
@@ -27034,7 +27041,7 @@ function renderContent(options) {
     ></scl-text-field>`,
     ];
 }
-function createAction$6(parent) {
+function createAction$8(parent) {
     return (inputs) => {
         const name = getValue(inputs.find(i => i.label === 'name'));
         const desc = getValue(inputs.find(i => i.label === 'desc'));
@@ -27068,7 +27075,7 @@ function createSubNetworkWizard(parent) {
         primary: {
             icon: 'add',
             label: 'add',
-            action: createAction$6(parent),
+            action: createAction$8(parent),
         },
         content: renderContent({
             name: '',
@@ -27115,7 +27122,7 @@ function getBitRateAction(oldBitRate, BitRate, multiplier, SubNetwork) {
         { node: oldBitRate },
     ];
 }
-function updateAction$9(element) {
+function updateAction$b(element) {
     return (inputs) => {
         const name = inputs.find(i => i.label === 'name').value;
         const desc = getValue(inputs.find(i => i.label === 'desc'));
@@ -27167,7 +27174,7 @@ function editSubNetworkWizard(element) {
         primary: {
             icon: 'save',
             label: 'save',
-            action: updateAction$9(element),
+            action: updateAction$b(element),
         },
         content: renderContent({
             name,
@@ -27195,7 +27202,7 @@ function render$4(options) {
     ></scl-text-field>`,
     ];
 }
-function createAction$5(parent) {
+function createAction$7(parent) {
     return (inputs) => {
         const name = getValue(inputs.find(i => i.label === 'name'));
         const desc = getValue(inputs.find(i => i.label === 'desc'));
@@ -27219,7 +27226,7 @@ function createSubstationWizard(parent) {
         primary: {
             icon: 'add',
             label: 'add',
-            action: createAction$5(parent),
+            action: createAction$7(parent),
         },
         content: render$4({
             name: '',
@@ -27228,7 +27235,7 @@ function createSubstationWizard(parent) {
         }),
     };
 }
-function updateAction$8(element) {
+function updateAction$a(element) {
     return (inputs) => {
         const name = inputs.find(i => i.label === 'name').value;
         const desc = getValue(inputs.find(i => i.label === 'desc'));
@@ -27245,7 +27252,7 @@ function editSubstationWizard(element) {
         primary: {
             icon: 'edit',
             label: 'save',
-            action: updateAction$8(element),
+            action: updateAction$a(element),
         },
         content: render$4({
             name: element.getAttribute('name') ?? '',
@@ -27281,7 +27288,7 @@ function contentTapChangerWizard(options) {
     ></scl-checkbox>`,
     ];
 }
-function createAction$4(parent) {
+function createAction$6(parent) {
     return (inputs) => {
         const tapChangerAttrs = {};
         const tapChangerKeys = ['name', 'desc', 'type', 'virtual'];
@@ -27308,7 +27315,7 @@ function createTapChangerWizard(parent) {
         primary: {
             icon: 'save',
             label: 'save',
-            action: createAction$4(parent),
+            action: createAction$6(parent),
         },
         content: [
             ...contentTapChangerWizard({
@@ -27321,7 +27328,7 @@ function createTapChangerWizard(parent) {
         ],
     };
 }
-function updateAction$7(element) {
+function updateAction$9(element) {
     return (inputs) => {
         const attributes = {};
         const tapChangerKeys = ['name', 'desc', 'type', 'virtual'];
@@ -27344,7 +27351,7 @@ function editTapChangerWizard(element) {
         primary: {
             icon: 'save',
             label: 'save',
-            action: updateAction$7(element),
+            action: updateAction$9(element),
         },
         content: [
             ...contentTapChangerWizard({
@@ -27370,7 +27377,7 @@ function render$3({ content }) {
     ></md-filled-textfield>`,
     ];
 }
-function createAction$3(parent) {
+function createAction$5(parent) {
     return (inputs) => {
         const content = getValue(inputs.find(i => i.label === 'content'));
         parent.ownerDocument.createElement('Text');
@@ -27391,14 +27398,14 @@ function createTextWizard(parent) {
         primary: {
             icon: 'add',
             label: 'add',
-            action: createAction$3(parent),
+            action: createAction$5(parent),
         },
         content: render$3({
             content: '',
         }),
     };
 }
-function updateAction$6(element) {
+function updateAction$8(element) {
     return (inputs) => {
         const content = inputs.find(i => i.label === 'content').value;
         if (content === element.textContent) {
@@ -27421,7 +27428,7 @@ function editTextWizard(element) {
         primary: {
             icon: 'edit',
             label: 'save',
-            action: updateAction$6(element),
+            action: updateAction$8(element),
         },
         content: render$3({
             content: element.textContent || '',
@@ -27455,7 +27462,7 @@ function contentTransformerWindingWizard(options) {
     ></scl-checkbox>`,
     ];
 }
-function createAction$2(parent) {
+function createAction$4(parent) {
     return (inputs) => {
         const attributes = {};
         const transformerWindingKeys = ['name', 'desc', 'type', 'virtual'];
@@ -27482,7 +27489,7 @@ function createTransformerWindingWizard(parent) {
         primary: {
             icon: 'save',
             label: 'save',
-            action: createAction$2(parent),
+            action: createAction$4(parent),
         },
         content: [
             ...contentTransformerWindingWizard({
@@ -27495,7 +27502,7 @@ function createTransformerWindingWizard(parent) {
         ],
     };
 }
-function updateAction$5(element) {
+function updateAction$7(element) {
     return (inputs) => {
         const attributes = {};
         const transformerWindingKeys = ['name', 'desc', 'type', 'virtual'];
@@ -27518,7 +27525,7 @@ function editTransformerWindingWizard(element) {
         primary: {
             icon: 'save',
             label: 'save',
-            action: updateAction$5(element),
+            action: updateAction$7(element),
         },
         content: [
             ...contentTransformerWindingWizard({
@@ -27589,7 +27596,7 @@ function render$2(option) {
     ></scl-text-field>`,
     ];
 }
-function createAction$1(parent) {
+function createAction$3(parent) {
     return (inputs) => {
         const name = getValue(inputs.find(i => i.label === 'name'));
         const desc = getValue(inputs.find(i => i.label === 'desc'));
@@ -27626,7 +27633,7 @@ function createVoltageLevelWizard(parent) {
         primary: {
             icon: 'add',
             label: 'add',
-            action: createAction$1(parent),
+            action: createAction$3(parent),
         },
         content: render$2({
             name: '',
@@ -27672,7 +27679,7 @@ function getVoltageAction(oldVoltage, Voltage, multiplier, voltageLevel) {
         { node: oldVoltage },
     ];
 }
-function updateAction$4(element) {
+function updateAction$6(element) {
     return (inputs) => {
         const name = inputs.find(i => i.label === 'name').value;
         const desc = getValue(inputs.find(i => i.label === 'desc'));
@@ -27722,7 +27729,7 @@ function editVoltageLevelWizard(element) {
         primary: {
             icon: 'edit',
             label: 'save',
-            action: updateAction$4(element),
+            action: updateAction$6(element),
         },
         content: render$2({
             name: element.getAttribute('name') ?? '',
@@ -27772,7 +27779,7 @@ function mxxTimeUpdateAction(gse, oldMxxTime, newTimeValue, option) {
         { node: oldMxxTime },
     ];
 }
-function updateAction$3(element) {
+function updateAction$5(element) {
     return (inputs, wizard) => {
         const action = [];
         const instType = wizard.querySelector('#instType').value === 'true';
@@ -27807,7 +27814,7 @@ function editGseWizard(element) {
         primary: {
             label: 'save',
             icon: 'save',
-            action: updateAction$3(element),
+            action: updateAction$5(element),
         },
         content: [
             ...contentAddress({ element, types }),
@@ -27829,7 +27836,7 @@ function editGseWizard(element) {
     };
 }
 
-function render$1(name, iedNames, desc, type, manufacturer, owner) {
+function renderAdd(name, iedNames, desc) {
     return [
         x `<scl-text-field
       label="name"
@@ -27843,6 +27850,11 @@ function render$1(name, iedNames, desc, type, manufacturer, owner) {
       .value=${desc}
       nullable
     ></scl-text-field>`,
+    ];
+}
+function renderEdit(name, iedNames, desc, type, manufacturer, owner) {
+    return [
+        ...renderAdd(name, iedNames, desc),
         x `<scl-text-field
       label="type"
       .value=${type}
@@ -27860,7 +27872,7 @@ function render$1(name, iedNames, desc, type, manufacturer, owner) {
     ></scl-text-field>`,
     ];
 }
-function updateAction$2(element) {
+function updateAction$4(element) {
     return (inputs) => {
         const name = inputs.find(i => i.label === 'name').value;
         const desc = getValue(inputs.find(i => i.label === 'desc'));
@@ -27874,64 +27886,172 @@ function updateAction$2(element) {
         });
     };
 }
-function editIEDWizard(element) {
-    const iedNames = Array.from(element.ownerDocument.querySelectorAll(':root > IED'))
+function getAllOtherIEDNames(parent) {
+    return Array.from(parent.ownerDocument.querySelectorAll(':root > IED'))
         .map(ied => ied.getAttribute('name'))
-        .filter(ied => ied !== element.getAttribute('name'));
+        .filter(ied => ied !== parent.getAttribute('name'));
+}
+function editIEDWizard(element) {
+    const iedNames = getAllOtherIEDNames(element.parentElement);
     return {
         title: 'Edit IED',
         primary: {
             icon: 'edit',
             label: 'save',
-            action: updateAction$2(element),
+            action: updateAction$4(element),
         },
-        content: render$1(element.getAttribute('name') ?? '', iedNames, element.getAttribute('desc'), element.getAttribute('type'), element.getAttribute('manufacturer'), element.getAttribute('owner')),
+        content: renderEdit(element.getAttribute('name') ?? '', iedNames, element.getAttribute('desc'), element.getAttribute('type'), element.getAttribute('manufacturer'), element.getAttribute('owner')),
+    };
+}
+function createIEDWizard(parent) {
+    const iedNames = getAllOtherIEDNames(parent);
+    return {
+        title: 'Add Virtial IED',
+        primary: {
+            icon: 'add',
+            label: 'Create',
+            action: updateAction$4(parent),
+        },
+        content: renderAdd(parent.getAttribute('name') ?? '', iedNames, parent.getAttribute('desc')),
     };
 }
 
-function render(inst, name, ldNames) {
-    return [
+function lDeviceNamePattern() {
+    return ('[A-Za-z][0-9A-Za-z_]{0,2}|' +
+        '[A-Za-z][0-9A-Za-z_]{4,63}|' +
+        '[A-MO-Za-z][0-9A-Za-z_]{3}|' +
+        'N[0-9A-Za-np-z_][0-9A-Za-z_]{2}|' +
+        'No[0-9A-Za-mo-z_][0-9A-Za-z_]|' +
+        'Non[0-9A-Za-df-z_]');
+}
+function ldNameIsAllowed(element) {
+    return !!element.closest('IED')?.querySelector('Services > ConfLdName');
+}
+function reservedInstLDevice(currentElement) {
+    const ied = currentElement.closest('IED');
+    if (!ied) {
+        return [];
+    }
+    return Array.from(ied.querySelectorAll(':scope > AccessPoint > Server > LDevice'))
+        .map(ld => ld.getAttribute('inst') ?? '')
+        .filter(name => name !== currentElement.getAttribute('inst'));
+}
+function render$1(inst, ldName, desc, reservedInsts, allowLdName, disableInst) {
+    const content = [
+        allowLdName
+            ? x `<scl-text-field
+          label="ldName"
+          .value=${ldName}
+          nullable
+          supportingText="Logical device name"
+          validationMessage="Required"
+          dialogInitialFocus
+          pattern="${lDeviceNamePattern()}"
+        ></scl-text-field>`
+            : x `<scl-text-field
+          label="ldName"
+          .value=${ldName}
+          supportingText="IED doesn't support Functional Naming"
+          helperPersistent
+          readOnly
+          disabled
+        ></scl-text-field>`,
+        x `<scl-text-field
+      label="desc"
+      .value=${desc}
+      nullable
+      supportingText="Logical device description"
+      pattern="${patterns.normalizedString}"
+    ></scl-text-field>`,
         x `<scl-text-field
       label="inst"
       .value=${inst}
-      disabled
-    ></scl-text-field>`,
-        x `<scl-text-field
-      label="name"
-      .value=${name}
-      nullable
-      .reservedValues=${ldNames}
+      ?disabled=${disableInst}
+      required
+      supportingText="Logical device inst"
+      pattern="${patterns.normalizedString}"
+      @input=${(e) => {
+            const input = e.target;
+            const currentValue = getValue(input) ?? '';
+            let customValidityMsg = '';
+            if (reservedInsts.includes(currentValue)) {
+                customValidityMsg = `"${currentValue}" is already in use`;
+            }
+            input.setCustomValidity(customValidityMsg);
+            input.reportValidity();
+        }}
+      .reservedValues=${reservedInsts}
     ></scl-text-field>`,
     ];
+    return content;
 }
-function updateAction$1(element) {
+function createAction$2(parent) {
     return (inputs) => {
-        const name = inputs.find(i => i.label === 'name').value;
-        if (name === element.getAttribute('name')) {
-            return [];
-        }
+        const inst = getValue(inputs.find(i => i.label === 'inst'));
+        const ldNameAllowed = ldNameIsAllowed(parent);
+        const ldName = ldNameAllowed
+            ? getValue(inputs.find(i => i.label === 'ldName'))
+            : null;
+        const desc = getValue(inputs.find(i => i.label === 'desc'));
+        const node = createElement(parent.ownerDocument, 'LDevice', {
+            inst,
+            ldName,
+            desc,
+        });
         return [
             {
-                element,
-                attributes: { name },
+                parent,
+                node,
+                reference: getReference(parent, 'LDevice'),
             },
         ];
     };
 }
+function updateAction$3(element) {
+    return (inputs) => {
+        const ldNameAllowed = ldNameIsAllowed(element);
+        const desc = getValue(inputs.find(i => i.label === 'desc'));
+        const ldName = ldNameAllowed
+            ? getValue(inputs.find(i => i.label === 'ldName'))
+            : null;
+        const attributes = {
+            ...(ldNameAllowed && ldName !== element.getAttribute('ldName')
+                ? { ldName }
+                : {}),
+            ...(desc !== element.getAttribute('desc') ? { desc } : {}),
+        };
+        return [
+            {
+                element,
+                attributes,
+            },
+        ];
+    };
+}
+function createLDeviceWizard(parent) {
+    return {
+        title: 'Add LDevice',
+        primary: {
+            icon: '',
+            label: 'save',
+            action: createAction$2(parent),
+        },
+        content: render$1(null, null, null, reservedInstLDevice(parent), ldNameIsAllowed(parent), false),
+    };
+}
 function editLDeviceWizard(element) {
-    const ldNames = Array.from(element.ownerDocument.querySelectorAll(':root > IED > AccessPoint > Server > LDevice')).map(ied => ied.getAttribute('name'));
     return {
         title: 'Edit LDevice',
         primary: {
             icon: 'edit',
             label: 'save',
-            action: updateAction$1(element),
+            action: updateAction$3(element),
         },
-        content: render(element.getAttribute('inst') ?? '', element.getAttribute('name'), ldNames),
+        content: render$1(element.getAttribute('inst'), element.getAttribute('ldName'), element.getAttribute('desc'), reservedInstLDevice(element), ldNameIsAllowed(element), true),
     };
 }
 
-function updateAction(element) {
+function updateAction$2(element) {
     return (inputs, wizard) => {
         const action = [];
         const instType = wizard.querySelector('#instType').value === 'true';
@@ -27957,7 +28077,7 @@ function editSMvWizard(element) {
         primary: {
             label: 'save',
             icon: 'edit',
-            action: updateAction(element),
+            action: updateAction$2(element),
         },
         content: [...contentAddress({ element, types })],
     };
@@ -28236,7 +28356,7 @@ function showIEdFilterList(evt) {
         ieds.classList.add('hidden');
     }
 }
-function createAction(parent) {
+function createAction$1(parent) {
     function createSingleLNode(lNode) {
         if (lNode.tagName === 'LNodeType') {
             const lnClass = lNode.getAttribute('lnClass');
@@ -28295,7 +28415,7 @@ function createLNodeWizard(parent) {
         primary: {
             icon: 'save',
             label: 'save',
-            action: createAction(parent),
+            action: createAction$1(parent),
         },
         content: [
             x `<div id="createLNodeWizardContent" style="min-height: fit-content;">
@@ -28362,6 +28482,332 @@ function createLNodeWizard(parent) {
         </div>
       </div>`,
         ],
+    };
+}
+
+function listLNodeTypes(doc) {
+    return Array.from(doc.querySelectorAll(':root > DataTypeTemplates > LNodeType'))
+        .map(type => ({
+        id: type.getAttribute('id'),
+        lnClass: type.getAttribute('lnClass'),
+        desc: type.getAttribute('desc'),
+        element: type,
+    }))
+        .filter(type => type.id && type.lnClass && type.lnClass !== 'LLN0');
+}
+function renderCreate(lNodeTypes) {
+    const items = lNodeTypes.map(type => ({
+        headline: type.lnClass,
+        supportingText: `#${type.id}${type.desc ? ` — ${type.desc}` : ''}`,
+        selected: false,
+        disabled: false,
+        attachedElement: type.element,
+    }));
+    /*
+     * This is a temporary workaround to enforce single selection in the
+     * SelectionList component, which currently does not support it natively.
+     */
+    const enforceSingleSelection = (event) => {
+        const list = event.currentTarget;
+        const listItem = event
+            .composedPath()
+            .find(target => target.tagName === 'MD-LIST-ITEM');
+        if (!listItem) {
+            return;
+        }
+        const itemsInDom = list.shadowRoot?.querySelectorAll('md-list-item');
+        if (!itemsInDom) {
+            return;
+        }
+        const index = Array.from(itemsInDom).indexOf(listItem);
+        if (index < 0) {
+            return;
+        }
+        setTimeout(() => {
+            const isSelected = list.items[index]?.selected ?? false;
+            list.items.forEach((item, i) => {
+                item.selected = i === index ? isSelected : false;
+            });
+            list.items = [...list.items];
+        }, 0);
+    };
+    return [
+        x `<selection-list
+      id="lnList"
+      .items=${items}
+      filterable
+      style="max-height: 320px; overflow: auto;"
+      @input=${enforceSingleSelection}
+    ></selection-list>`,
+        x `<scl-text-field
+      label="desc"
+      .value=${null}
+      nullable
+      supportingText="Logical node description"
+      pattern="${patterns.normalizedString}"
+    ></scl-text-field>`,
+        x `<scl-text-field
+      label="prefix"
+      .value=${null}
+      nullable
+      supportingText="Optional LN prefix"
+      pattern="${patterns.prefix}"
+      maxLength="${maxLength.prefix}"
+    ></scl-text-field>`,
+        x `<scl-text-field
+      label="amount"
+      .value=${'1'}
+      required
+      supportingText="Number of LNs to add"
+      validationMessage="Number must be 1 or greater"
+      type="number"
+      min="1"
+    ></scl-text-field>`,
+    ];
+}
+function createAction(parent) {
+    return (inputs, wizard) => {
+        const list = wizard.querySelector('#lnList');
+        const selected = list?.selectedElements?.[0];
+        if (!selected) {
+            return [];
+        }
+        const lnClass = selected.getAttribute('lnClass');
+        const lnType = selected.getAttribute('id');
+        if (!lnClass || !lnType) {
+            return [];
+        }
+        const desc = getValue(inputs.find(i => i.label === 'desc'));
+        const prefixValue = getValue(inputs.find(i => i.label === 'prefix'));
+        const prefix = prefixValue?.trim() ? prefixValue.trim() : null;
+        const amountValue = Number(getValue(inputs.find(i => i.label === 'amount')) ?? '1');
+        const amount = Number.isFinite(amountValue) && amountValue > 0
+            ? Math.floor(amountValue)
+            : 1;
+        const getInst = lnInstGenerator(parent, 'LN');
+        const reference = getReference(parent, 'LN');
+        const edits = [];
+        for (let i = 0; i < amount; i += 1) {
+            const inst = getInst(lnClass);
+            if (!inst) {
+                break;
+            }
+            const node = createElement(parent.ownerDocument, 'LN', {
+                lnClass,
+                lnType,
+                inst,
+                desc,
+                ...(prefix ? { prefix } : {}),
+            });
+            edits.push({ parent, node, reference });
+        }
+        return edits;
+    };
+}
+function createLNWizard(parent) {
+    const lNodeTypes = listLNodeTypes(parent.ownerDocument);
+    return {
+        title: 'Add LN',
+        primary: {
+            icon: 'save',
+            label: 'save',
+            action: createAction(parent),
+        },
+        content: renderCreate(lNodeTypes),
+    };
+}
+function reservedInstLN(currentElement, prefixOverride) {
+    const ldevice = currentElement.closest('LDevice');
+    if (!ldevice) {
+        return [];
+    }
+    const currentLnClass = currentElement.getAttribute('lnClass');
+    const targetPrefix = currentElement.getAttribute('prefix') || '';
+    const lnElements = Array.from(ldevice.querySelectorAll(':scope > LN')).filter(ln => ln !== currentElement &&
+        (ln.getAttribute('prefix') || '') === targetPrefix &&
+        ln.getAttribute('lnClass') === currentLnClass);
+    return lnElements
+        .map(ln => ln.getAttribute('inst'))
+        .filter(inst => inst !== null);
+}
+function updateAction$1(element) {
+    return (inputs, _wizard) => {
+        const attributes = {};
+        const keys = ['lnType', 'desc', 'prefix', 'lnClass', 'inst'];
+        keys.forEach(key => {
+            attributes[key] = getValue(inputs.find(i => i.label === key));
+        });
+        const hasChanges = keys.some(key => attributes[key] !== element.getAttribute(key));
+        if (!hasChanges) {
+            return [];
+        }
+        const newPrefix = attributes.prefix || '';
+        const newLnClass = attributes.lnClass;
+        const newInst = attributes.inst;
+        const ldevice = element.closest('LDevice');
+        if (ldevice) {
+            const isDuplicate = Array.from(ldevice.querySelectorAll(':scope > LN')).some(ln => ln !== element &&
+                (ln.getAttribute('prefix') || '') === newPrefix &&
+                ln.getAttribute('lnClass') === newLnClass &&
+                ln.getAttribute('inst') === newInst);
+            if (isDuplicate) {
+                //TODO consider reporting this to the user (e.g. notifications)
+                return [];
+            }
+        }
+        return [
+            {
+                element,
+                attributes,
+            },
+        ];
+    };
+}
+function renderUpdate(element) {
+    const lnType = element.getAttribute('lnType');
+    const desc = element.getAttribute('desc');
+    const prefix = element.getAttribute('prefix');
+    const lnClass = element.getAttribute('lnClass');
+    const inst = element.getAttribute('inst');
+    const reserved = reservedInstLN(element);
+    return [
+        x `<scl-text-field
+      label="lnType"
+      .value=${lnType}
+      readOnly
+      disabled
+      required
+      supportingText="Logical node type"
+    ></scl-text-field>`,
+        x `<scl-text-field
+      label="desc"
+      .value=${desc}
+      nullable
+      supportingText="Logical node description"
+      pattern="${patterns.normalizedString}"
+    ></scl-text-field>`,
+        x `<scl-text-field
+      label="prefix"
+      .value=${prefix}
+      nullable
+      supportingText="Optional LN prefix"
+      pattern="${patterns.prefix}"
+      maxLength="${maxLength.prefix}"
+    ></scl-text-field>`,
+        x `<scl-text-field
+      label="lnClass"
+      .value=${lnClass}
+      readOnly
+      disabled
+      required
+      supportingText="Logical node class"
+      pattern="${patterns.lnClass}"
+    ></scl-text-field>`,
+        x `<scl-text-field
+      label="inst"
+      .value=${inst}
+      required
+      supportingText="Logical node instance"
+      pattern="${patterns.lnInst}"
+      .reservedValues=${reserved}
+      @input=${(e) => {
+            const field = e.target;
+            const currentValue = field.value ?? '';
+            const customValidityMsg = reserved.includes(currentValue)
+                ? `"${currentValue}" is already in use`
+                : '';
+            field.setCustomValidity(customValidityMsg);
+            field.reportValidity();
+        }}
+    ></scl-text-field>`,
+    ];
+}
+function updateLNWizard(element) {
+    return {
+        title: 'Edit LN',
+        primary: {
+            icon: 'edit',
+            label: 'save',
+            action: updateAction$1(element),
+        },
+        content: renderUpdate(element),
+    };
+}
+
+function getLNodeTypeOptions(element) {
+    const doc = element.ownerDocument;
+    const lNodeTypes = Array.from(doc.querySelectorAll('DataTypeTemplates > LNodeType[lnClass="LLN0"]'));
+    return lNodeTypes
+        .map(type => type.getAttribute('id'))
+        .filter((id) => !!id);
+}
+function render(element, lnodeTypeIds) {
+    const lnType = element.getAttribute('lnType');
+    const desc = element.getAttribute('desc');
+    const lnClass = element.getAttribute('lnClass');
+    const inst = element.getAttribute('inst');
+    return [
+        x `<scl-select
+      label="lnType"
+      .value=${lnType}
+      required
+      .selectOptions=${lnodeTypeIds}
+    ></scl-select>`,
+        x `<scl-text-field
+      label="desc"
+      .value=${desc}
+      nullable
+      supportingText="Logical node zero description"
+      pattern="${patterns.normalizedString}"
+    ></scl-text-field>`,
+        x `<scl-text-field
+      label="lnClass"
+      .value=${lnClass}
+      readOnly
+      disabled
+      required
+      supportingText="Logical node class"
+      pattern="${patterns.lnClass}"
+    ></scl-text-field>`,
+        x `<scl-text-field
+      label="inst"
+      .value=${inst}
+      readOnly
+      disabled
+      supportingText="Logical node instance"
+    ></scl-text-field>`,
+    ];
+}
+function updateAction(element) {
+    return (inputs) => {
+        const attributes = {};
+        // Key attributes omitted from update are: 'lnClass', 'inst'.
+        const keys = ['lnType', 'desc'];
+        keys.forEach(key => {
+            attributes[key] = getValue(inputs.find(i => i.label === key));
+        });
+        const hasChanges = keys.some(key => attributes[key] !== element.getAttribute(key));
+        if (!hasChanges) {
+            return [];
+        }
+        return [
+            {
+                element,
+                attributes,
+            },
+        ];
+    };
+}
+function updateLN0Wizard(element) {
+    const lnodeTypeIds = getLNodeTypeOptions(element);
+    return {
+        title: 'Edit LN0',
+        primary: {
+            icon: 'edit',
+            label: 'save',
+            action: updateAction(element),
+        },
+        content: render(element, lnodeTypeIds),
     };
 }
 
@@ -28659,7 +29105,7 @@ const wizards = {
     },
     IED: {
         edit: editIEDWizard,
-        create: emptyWizard,
+        create: createIEDWizard,
     },
     IEDName: {
         edit: emptyWizard,
@@ -28679,14 +29125,14 @@ const wizards = {
     },
     LDevice: {
         edit: editLDeviceWizard,
-        create: emptyWizard,
+        create: createLDeviceWizard,
     },
     LN: {
-        edit: emptyWizard,
-        create: emptyWizard,
+        edit: updateLNWizard,
+        create: createLNWizard,
     },
     LN0: {
-        edit: emptyWizard,
+        edit: updateLN0Wizard,
         create: emptyWizard,
     },
     LNode: {
@@ -28991,7 +29437,7 @@ class TriggerWizard extends i {
         return x `<div class="card">
         <h2>Add Element</h2>
         <p>
-          Use this section to trigger the oscd-edit-dialog to Add/Inert the
+          Use this section to trigger the oscd-scl-dialogs to Add/Inert the
           specified Element to the specified Parent
         </p>
         <label>Parent Selector:</label
@@ -29006,7 +29452,7 @@ class TriggerWizard extends i {
       <div class="card">
         <h2>Edit existing Element</h2>
         <p>
-          Use this section to trigger the oscd-edit-dialog to Edit the specified
+          Use this section to trigger the oscd-scl-dialogs to Edit the specified
           existing Element
         </p>
         <label>Tag Selector</label>
@@ -29110,7 +29556,7 @@ __decorate([
     e('#tagSelector')
 ], TriggerWizard.prototype, "tagSelector", void 0);
 __decorate([
-    e('oscd-edit-dialog')
+    e('oscd-scl-dialogs')
 ], TriggerWizard.prototype, "editDialog", void 0);
 
 export { TriggerWizard as default };

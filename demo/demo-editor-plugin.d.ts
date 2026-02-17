@@ -1,5 +1,5 @@
 import { LitElement } from 'lit';
-import type WizardDialog from '@omicronenergy/oscd-edit-dialog/OscdEditDialog.js';
+import type OscdSclDialogs from '@omicronenergy/oscd-scl-dialogs/OscdSclDialogs.js';
 import { XMLEditor } from '@omicronenergy/oscd-editor';
 export default class TriggerWizard extends LitElement {
     doc: XMLDocument;
@@ -9,7 +9,7 @@ export default class TriggerWizard extends LitElement {
     parentSelector: HTMLInputElement;
     childinput: HTMLInputElement;
     tagSelector: HTMLInputElement;
-    editDialog: WizardDialog;
+    editDialog: OscdSclDialogs;
     triggerWizardCreate(): Promise<void>;
     triggerWizardEdit(): Promise<void>;
     render(): import("lit-html").TemplateResult<1>;

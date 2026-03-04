@@ -26122,12 +26122,12 @@ function contentFunctionWizard(options) {
     ></scl-text-field>`,
         x `<scl-text-field
       label="desc"
-      .maybeValue=${options.desc}
+      .value=${options.desc}
       nullable
     ></scl-text-field>`,
         x `<scl-text-field
       label="type"
-      .maybeValue=${options.type}
+      .value=${options.type}
       nullable
     ></scl-text-field>`,
     ];
@@ -26358,7 +26358,7 @@ function contentGeneralEquipmentWizard(options) {
     ></scl-text-field>`,
         x `<scl-text-field
       label="desc"
-      .maybeValue=${options.desc}
+      .value=${options.desc}
       nullable
     ></scl-text-field>`,
         x `<scl-text-field
@@ -28115,7 +28115,7 @@ function createDOTypeWizard(parent) {
       ></scl-text-field>`,
             x `<scl-text-field
         label="desc"
-        .maybeValue=${null}
+        .value=${null}
         nullable
         pattern="${patterns.normalizedString}"
       ></scl-text-field>`,

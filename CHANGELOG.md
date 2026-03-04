@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.3](https://github.com/OMICRONEnergyOSS/oscd-background-wizard-events/compare/oscd-background-wizard-events-v0.0.2...oscd-background-wizard-events-v0.0.3) (2026-03-04)
+
+
+### Bug Fixes
+
+* update oscd-scl-dialogs to v0.0.11 ([58a2faa](https://github.com/OMICRONEnergyOSS/oscd-background-wizard-events/commit/58a2faa1aa5d539a15d6d256da52b7d160bf120e))
+
 ## [0.0.2](https://github.com/OMICRONEnergyOSS/oscd-background-wizard-events/compare/oscd-background-wizard-events-v0.0.1...oscd-background-wizard-events-v0.0.2) (2026-02-17)
 
 

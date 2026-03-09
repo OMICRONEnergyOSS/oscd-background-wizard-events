@@ -5,9 +5,8 @@ import { expect, fixture, html, waitUntil } from '@open-wc/testing';
 
 import { SinonSpy, spy } from 'sinon';
 
-import OscdMenuOpen from './oscd-background-wizard-events.js';
-import OscdBackgroundEditV1 from './oscd-background-wizard-events.js';
-import { XMLEditor } from '@omicronenergy/oscd-editor';
+import OscdBackgroundWizardEvents from './oscd-background-wizard-events.js';
+import { XMLEditor } from '@openscd/oscd-editor';
 import {
   newCloseWizardEvent,
   newCreateWizardEvent,
@@ -20,10 +19,13 @@ const doc = new DOMParser().parseFromString(
   'application/xml',
 );
 
-customElements.define('oscd-background-wizard-events', OscdMenuOpen);
+customElements.define(
+  'oscd-background-wizard-events',
+  OscdBackgroundWizardEvents,
+);
 
 describe('oscd-background-wizard-events', () => {
-  let pluginFixture: OscdBackgroundEditV1;
+  let pluginFixture: OscdBackgroundWizardEvents;
 
   let xmlEditorCommit: SinonSpy;
 

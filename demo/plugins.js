@@ -1,7 +1,8 @@
 import OscdMenuOpen from '@omicronenergy/oscd-menu-open';
 import OscdMenuSave from '@omicronenergy/oscd-menu-save';
 import OscdBackgroundEditV1 from '@omicronenergy/oscd-background-editv1';
-import OscdBackgroundWizardEvents from '../oscd-background-wizard-events.js';
+import OscdBackgroundWizardEvents from '@omicronenergy/oscd-background-wizard-events/oscd-background-wizard-events.js';
+import DemoEditorPlugin from './demo-editor-plugin.js';
 
 const oscdShell = document.querySelector('oscd-shell');
 
@@ -12,6 +13,7 @@ if (oscdShell?.registry) {
   registry.define('oscd-background-editv1', OscdBackgroundEditV1);
 
   registry.define('oscd-background-wizard-events', OscdBackgroundWizardEvents);
+  registry.define('demo-editor-plugin', DemoEditorPlugin);
 } else {
   console.error('Shell registry not found. Plugins could not be registered.');
 }
@@ -38,7 +40,7 @@ export const plugins = {
       translations: { de: 'Wizard Triggern' },
       icon: 'folder_open',
       requireDoc: true,
-      src: './demo-editor-plugin.js',
+      tagName: 'demo-editor-plugin',
     },
   ],
   background: [

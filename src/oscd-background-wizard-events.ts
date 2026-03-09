@@ -1,11 +1,11 @@
-import { XMLEditor } from '@omicronenergy/oscd-editor';
+import { XMLEditor } from '@openscd/oscd-editor';
 import { ScopedElementsMixin } from '@open-wc/scoped-elements/lit-element.js';
 import { CreateWizardEvent, EditWizardEvent } from './foundation.js';
 import { html, LitElement } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import OscdSclDialogs from '@omicronenergy/oscd-scl-dialogs/OscdSclDialogs.js';
-import { Edit } from '@omicronenergy/oscd-api';
-import { convertEdit } from '@omicronenergy/oscd-api/utils.js';
+import { Edit } from '@openscd/oscd-api';
+import { convertEdit } from '@openscd/oscd-api/utils.js';
 
 class BaseElement extends ScopedElementsMixin(LitElement) {}
 

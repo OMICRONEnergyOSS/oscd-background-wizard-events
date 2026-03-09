@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.4](https://github.com/OMICRONEnergyOSS/oscd-background-wizard-events/compare/oscd-background-wizard-events-v0.0.3...oscd-background-wizard-events-v0.0.4) (2026-03-09)
+
+
+### Features
+
+* update deps, move code into src ([a06e801](https://github.com/OMICRONEnergyOSS/oscd-background-wizard-events/commit/a06e80152693292d351e41d08ecd303c03c51573))
+
 ## [0.0.3](https://github.com/OMICRONEnergyOSS/oscd-background-wizard-events/compare/oscd-background-wizard-events-v0.0.2...oscd-background-wizard-events-v0.0.3) (2026-03-04)
 
 

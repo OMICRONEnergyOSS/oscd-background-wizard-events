@@ -1,4 +1,4 @@
-import { XMLEditor } from '@omicronenergy/oscd-editor';
+import { XMLEditor } from '@openscd/oscd-editor';
 import { CreateWizardEvent, EditWizardEvent } from './foundation.js';
 import { LitElement } from 'lit';
 import OscdSclDialogs from '@omicronenergy/oscd-scl-dialogs/OscdSclDialogs.js';
